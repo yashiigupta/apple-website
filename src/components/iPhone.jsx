@@ -14,7 +14,7 @@ function Model(props) {
   const { nodes, materials } = useGLTF('/models/scene.glb');
   const texture = useTexture(props.item.img);
   useEffect(() => {
-    Object.entries(materials).map((material) => {
+    Object.entries(materials).forEach((material) => {
       if (
         material[0] !== "zFdeDaGNRwzccye" &&
         material[0] !== "ujsvqBWRMnqdwPx" &&
