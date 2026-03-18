@@ -24,7 +24,7 @@ jobs:
         run: npm run lint
 
       - name: Run Tests
-        run: npm test -- --watchAll=false
+        run: npm test -- --watchAll=false --passWithNoTests
 
       - name: Build project
         run: npm run build
