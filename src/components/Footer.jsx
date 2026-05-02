@@ -1,5 +1,5 @@
 import React from 'react';
-import { footerLinks } from '../constants/constants';
+import { footerLinks } from '../constants';
 
 const Footer = () => {
   return (

@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { animateWithGsap } from '../constants/animations';
+import { animateWithGsap } from '../utils/animations';
 
 const Features = () => {
   const videoRef = useRef();

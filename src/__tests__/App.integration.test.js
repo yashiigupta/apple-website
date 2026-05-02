@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import App from "./App";
+import App from "../App";
 
 // Mock GSAP and ScrollTrigger - Replace GSAP functions with dummy functions
 jest.mock("gsap", () => ({
@@ -19,7 +19,7 @@ jest.mock("gsap/all", () => ({
   ScrollTrigger: jest.fn(),
 }));
 
-jest.mock("./constants/animations", () => ({
+jest.mock("../utils/animations", () => ({
   animateWithGsap: jest.fn(),
   animateWithGsapTimeline: jest.fn(),
 }));
@@ -57,7 +57,7 @@ jest.mock("@react-three/drei", () => {
 });
 
 // Mock VideoCarousel to simplify the test - Replaces complex 3D rendering with simple HTML for testing
-jest.mock("./components/VideoCarousel", () => () => <div data-testid="video-carousel" />);
+jest.mock("../components/VideoCarousel", () => () => <div data-testid="video-carousel" />);
 
 describe("App Integration Test", () => {
   test("renders all major sections of the application", () => {

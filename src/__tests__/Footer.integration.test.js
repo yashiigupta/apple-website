@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import Footer from "./Footer";
-import { footerLinks } from "../constants/constants";
+import Footer from "../components/Footer";
+import { footerLinks } from "../constants";
 
 test("renders all footer links from data", () => {
   render(<Footer />);
