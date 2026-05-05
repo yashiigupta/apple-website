@@ -1,0 +1,27 @@
+# ── Dependencies (re-installed inside builder stage) ─────────────────────────
+node_modules/
+
+# ── Previous build output ─────────────────────────────────────────────────────
+build/
+
+# ── Git history ───────────────────────────────────────────────────────────────
+.git/
+.gitignore
+
+# ── CI / GitHub Actions ───────────────────────────────────────────────────────
+.github/
+
+# ── Test artifacts & coverage ─────────────────────────────────────────────────
+coverage/
+reports/
+
+# ── Editor / OS noise ────────────────────────────────────────────────────────
+.DS_Store
+*.log
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ── Docs ──────────────────────────────────────────────────────────────────────
+README.md
