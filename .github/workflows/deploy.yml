@@ -8,7 +8,6 @@ jobs:
   phase3-docker-ecs:
     name: Phase 3 - Docker Build & ECS Deploy
     runs-on: ubuntu-latest
-    needs: phase2-terraform
     
     steps:
       - name: Checkout code
