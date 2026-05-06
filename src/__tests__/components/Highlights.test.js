@@ -1,3 +1,5 @@
+/* eslint-disable testing-library/no-node-access */
+/* eslint-disable testing-library/no-render-in-lifecycle */
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import Highlights from '../../components/Highlights';
