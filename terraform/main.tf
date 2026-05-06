@@ -58,17 +58,17 @@ resource "aws_s3_bucket_public_access_block" "app_bucket" {
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Security Group — allow inbound HTTP on port 80, all outbound
+# ALB Security Group — allow inbound HTTP on port 80
 # ──────────────────────────────────────────────────────────────────────────────
-resource "aws_security_group" "ecs_sg" {
-  name        = "${var.project_name}-ecs-sg"
-  description = "Allow HTTP inbound to ECS Fargate tasks"
+resource "aws_security_group" "alb_sg" {
+  name        = "${var.project_name}-alb-sg"
+  description = "Allow HTTP inbound to ALB"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
     description = "HTTP from anywhere"
-    from_port   = 8080
-    to_port     = 8080
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -82,8 +82,91 @@ resource "aws_security_group" "ecs_sg" {
   }
 
   tags = {
+    Name    = "${var.project_name}-alb-sg"
+    Project = var.project_name
+  }
+}
+
+# ──────────────────────────────────────────────────────────────────────────────
+# ECS Security Group — allow inbound HTTP on 8080 ONLY from ALB
+# ──────────────────────────────────────────────────────────────────────────────
+resource "aws_security_group" "ecs_sg" {
+  name_prefix = "${var.project_name}-ecs-sg-"
+  description = "Allow HTTP inbound to ECS Fargate tasks from ALB"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress {
+    description     = "HTTP from ALB"
+    from_port       = var.container_port
+    to_port         = var.container_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb_sg.id]
+  }
+
+  egress {
+    description = "All outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = {
     Name    = "${var.project_name}-ecs-sg"
     Project = var.project_name
+  }
+}
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Application Load Balancer
+# ──────────────────────────────────────────────────────────────────────────────
+resource "aws_lb" "app_alb" {
+  name               = "${var.project_name}-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb_sg.id]
+  subnets            = data.aws_subnets.public.ids
+
+  tags = {
+    Name    = "${var.project_name}-alb"
+    Project = var.project_name
+  }
+}
+
+resource "aws_lb_target_group" "app_tg" {
+  name        = "${var.project_name}-tg"
+  port        = var.container_port
+  protocol    = "HTTP"
+  vpc_id      = data.aws_vpc.default.id
+  target_type = "ip"
+
+  health_check {
+    path                = "/health"
+    healthy_threshold   = 2
+    unhealthy_threshold = 5
+    timeout             = 5
+    interval            = 30
+    matcher             = "200"
+  }
+
+  tags = {
+    Name    = "${var.project_name}-tg"
+    Project = var.project_name
+  }
+}
+
+resource "aws_lb_listener" "app_listener" {
+  load_balancer_arn = aws_lb.app_alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.app_tg.arn
   }
 }
 
@@ -189,6 +272,12 @@ resource "aws_ecs_service" "app" {
     assign_public_ip = true
   }
 
+  load_balancer {
+    target_group_arn = aws_lb_target_group.app_tg.arn
+    container_name   = var.project_name
+    container_port   = var.container_port
+  }
+
   # Give the task time to pass its health check before Terraform declares success
   timeouts {
     create = "10m"
@@ -200,5 +289,8 @@ resource "aws_ecs_service" "app" {
     Project = var.project_name
   }
 
-  depends_on = [aws_cloudwatch_log_group.ecs_logs]
+  depends_on = [
+    aws_cloudwatch_log_group.ecs_logs,
+    aws_lb_listener.app_listener
+  ]
 }
