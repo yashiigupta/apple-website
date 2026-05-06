@@ -7,11 +7,7 @@ terraform {
       version = "~> 5.0"
     }
   }
-  backend "s3" {
-    bucket = "apple-website-520899053888-tfstate"
-    key    = "terraform/state.tfstate"
-    region = "us-east-1"
-  }
+  
 }
 
 provider "aws" {
